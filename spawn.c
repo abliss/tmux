@@ -208,7 +208,7 @@ spawn_pane(struct spawn_context *sc, char **cause)
 	struct window_pane	 *new_wp;
 	struct environ		 *child;
 	struct environ_entry	 *ee;
-	char			**argv, *cp, **argvp, *argv0, *cwd;
+	char			**argv, *cp, **argvp, *argv0, *cwd, **var;
 	const char		 *cmd, *tmp;
 	int			  argc;
 	u_int			  idx;
@@ -406,6 +406,10 @@ spawn_pane(struct spawn_context *sc, char **cause)
 	proc_clear_signals(server_proc, 1);
 	sigprocmask(SIG_SETMASK, &oldset, NULL);
 	log_close();
+    /* Preserve new env vars added since child was forked above. */
+	for (var = environ; *var != NULL; var++) {
+		environ_put(child, *var, 0);
+    }
 	environ_push(child);
 
 	/*
